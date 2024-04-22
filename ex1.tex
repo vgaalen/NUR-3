@@ -1,0 +1,112 @@
+\section{Satellite galaxies around a massive central – part 2}
+Code of shared modules:
+\lstinputlisting{ex1.py}[firstline=1, lastline=56]
+
+\subsection*{a}
+Here the goal is to find the x-value for which the number density of satellite galaxies is the highest (using the same formula as in hand-in 2).
+I chose to use a golden ratio search algorithm here, as it very robust.
+As the exercise gave a specific range to search in this algorithm works well, as it is impossible to jump ouside this range with this algorithm.
+
+This gave the following solution:
+\lstinputlisting{output/ex1a.txt}
+
+The code used for this subquestion is:
+\lstinputlisting{ex1.py}[firstline=61, lastline=67]
+
+\subsection*{b}
+For this exercise a dataset containing the positions of millions of sattelite galaxies relative to their cluster center is used to fit a number density profile.
+The profile from the second hand-in is used again, but now the a, b, and c parameters are fitted to the data.
+This is done for 5 different bins for halo mass.
+
+In order to compare the discrete galaxy positions with number densities, these galaxies are binned based on their distance to the cluster center.
+A downhill simplex minimization algorithm is then used to find the best fit for the parameters based on $\Chi^2$.
+
+This gives the following profiles:
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1b_0.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^11 Msun/h.}
+    \label{fig:ex1b_0}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1b_1.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^12 Msun/h.}
+    \label{fig:ex1b_1}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1b_2.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^13 Msun/h.}
+    \label{fig:ex1b_2}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1b_3.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^14 Msun/h.}
+    \label{fig:ex1b_3}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1b_4.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^15 Msun/h.}
+    \label{fig:ex1b_4}
+\end{figure}
+
+The best fit values found are:
+\lstinputlisting{output/ex1b.txt}
+
+The code used for this subquestion is:
+\lstinputlisting{ex1.py}[firstline=70, lastline=108]
+
+\subsection*{c}
+This exercise is very similar to 1b, except that the assumption of a Gaussian distribution around the density profile is dropped.
+As it is a distribution around a number density, a Poisson distribution is more accurate.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1c_0.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^11 Msun/h.}
+    \label{fig:ex1c_0}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1c_1.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^12 Msun/h.}
+    \label{fig:ex1c_1}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1c_2.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^13 Msun/h.}
+    \label{fig:ex1c_2}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1c_3.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^14 Msun/h.}
+    \label{fig:ex1c_3}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/1c_4.png}
+    \caption{Number density profile and fit for haloes of approximate mass 10^15 Msun/h.}
+    \label{fig:ex1c_4}
+\end{figure}
+
+The best fit values found are:
+\lstinputlisting{output/ex1c.txt}
+
+The code used for this subquestion is:
+\lstinputlisting{ex1.py}[firstline=70, lastline=108]
+
+\subsection*{d}
+For this exercise the results of 1b and 1c are compared.
+A G-test is used for this.
+
+This gave the following values:
+\lstinputlisting{output/ex1d.txt}
+
+By calculating the significance Q of G these approaches can be compared.
+...

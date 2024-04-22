@@ -1,3 +1,14 @@
+# output files
+output
+output/*
+plots
+plots/*
+data
+data/*
+*.pdf
+*.png
+*.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
