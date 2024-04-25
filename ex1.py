@@ -1,22 +1,35 @@
 import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams['text.usetex'] = True
+import warnings
 
 def n(x, a, b, c, Nsat, A):
     return A * Nsat * (x/b)**(a-3) * np.exp(-(x/b)**c)
 
 def N(x, a, b, c, Nsat, A):
-    return 4*np.pi*x**2*n(x)
+    return 4*np.pi*x**2*n(x, a, b, c, Nsat, A)
 
 def x2n(x, a, b, c, Nsat, A):
-    #print("x2n")
+    if a<1:
+        raise ValueError("A value for parameter a below 1 is not allowed")
+    if b<0:
+        raise ValueError("Negative values for b are not supported")
+    if c<0:
+        raise ValueError("Negative values for c are not supported")
     return A * Nsat * x**(a-1) * b**(3-a) * np.exp(-(x/b)**c)
 
-def Ndx(x ,xmin,xmax,Nsat,A=None):
-    a,b,c = x[0],x[1],x[2]
+def Ndx(parameters, x, A=None):
+    a,b,c = parameters[0], parameters[1], parameters[2]
+    xmin, xmax, Nsat = x
     if A is None:
-        A = 1/Romberg_integration(lambda x: x2n(x, a, b, c, 1, 1),0,2.5)
+        norm = 4*np.pi*Romberg_integration(lambda x: x2n(x, a, b, c, Nsat, 1),0,2.5)
+        if norm!=0:
+            A = Nsat / norm
+        else:
+            A = 1
     return 4*np.pi*Romberg_integration(lambda x: x2n(x, a, b, c, Nsat, A),xmin,xmax)
 
-def Romberg_integration(f,a,b,*args,m=5,h=1):
+def Romberg_integration(f,a,b,*args,m=5,h=None):
     """
     Implementation of Romberg Integration.
     Numerical integration of function f(x), from x=a until x=b
@@ -24,7 +37,8 @@ def Romberg_integration(f,a,b,*args,m=5,h=1):
     if a>b:
         a,b=b,a
     
-    h=h*(b-a)
+    if h is None:
+        h=(b-a)
     r = np.zeros(m)
     r[0] = 0.5*h*(f(a,*args)+f(b,*args))
 
@@ -47,6 +61,10 @@ def Romberg_integration(f,a,b,*args,m=5,h=1):
     return r[0]
 
 def golden_section_search(f, x0, x1, x2, target_accuracy=None, max_itt=1000):
+    """
+    Implementation of Golden Section Search.
+    This function finds a minimum in f using the bracket [x0,x1,x2]
+    """
 
     # define the golden ratio
     w=1/(1+((1+np.sqrt(5))*0.5))
@@ -99,68 +117,57 @@ def golden_section_search(f, x0, x1, x2, target_accuracy=None, max_itt=1000):
         # if the target accuracy is reached, return the x-value associated with the smallest y-value
         if np.abs(x2-x0)<=target_accuracy:
             if y3 < y1:
-                print('a')
                 return x3
             else:
-                print('b')
                 return x1
     if y3 < y1:
-        print('c')
         return x3
     else:
-        print('d')
         return x1
 
-def multid_quick_sort(f,x):
+def multid_quick_sort(y,x):
     """
     Quick sort algorithm
 
     Parameters
     ----------
-    f : function
-        The function generating the values to sort on
-    x : list
-        The list that should be sorted based on f(x)
-
-    Returns
-    -------
-    list
-        The sorted list
+    y : list
+        The values to sort with
+    x : 2d numpy array
+        The list that should be sorted based on the values in y
     """
 
     if x.shape[0] <= 1:
-        return x
+        return y, x
     else:
-        set = []
-        for i in range(np.array(x).shape[0]):
-            set.append(f(x[i,:]))
-
-        if set[len(set)//2]<set[0]:
-            if set[-1]<=set[len(set)//2]:
-                set[0], set[len(set)//2], set[-1] = set[-1], set[len(set)//2], set[0]
-                x[0,:], x[len(set)//2,:], x[-1,:] = x[-1,:], x[len(set)//2,:], x[0,:]
-            elif set[-1]<set[0]:
-                set[0], set[len(set)//2], set[-1] = set[len(set)//2], set[-1], set[0]
-                x[0,:], x[len(set)//2,:], x[-1,:] = x[len(set)//2,:], x[-1,:], x[0,:]
+        # sort the first, middle, and last values to make sure the pivot is the maximum or minimum
+        if y[len(y)//2]<y[0]:
+            if y[-1]<=y[len(y)//2]:
+                y[0], y[-1] = y[-1], y[0]
+                x[0,:], x[-1,:] = x[-1,:].copy(), x[0,:].copy()
+            elif y[-1]<y[0]:
+                y[0], y[len(y)//2], y[-1] = y[len(y)//2], y[-1], y[0]
+                x[0,:], x[len(y)//2,:], x[-1,:] = x[len(y)//2,:].copy(), x[-1,:].copy(), x[0,:].copy()
             else:
-                set[0], set[len(set)//2], set[-1] = set[len(set)//2], set[0], set[-1]
-                x[0,:], x[len(set)//2,:], x[-1,:] = x[len(set)//2,:], x[0,:], x[-1,:]
+                y[0], y[len(y)//2] = y[len(y)//2], y[0]
+                x[0,:], x[len(y)//2,:] = x[len(y)//2,:].copy(), x[0,:].copy()
         else:
-            if set[-1]<=set[0]:
-                set[0], set[len(set)//2], set[-1] = set[-1], set[0], set[len(set)//2]
-                x[0,:], x[len(set)//2,:], x[-1,:] = x[-1,:], x[0,:], x[len(set)//2,:]
-            elif set[-1]<set[len(set)//2]:
-                set[0], set[len(set)//2], set[-1] = set[0], set[-1], set[len(set)//2]
-                x[0,:], x[len(set)//2,:], x[-1,:] = x[0,:], x[-1,:], x[len(set)//2,:]
-        
+            if y[-1]<=y[0]:
+                y[0], y[len(y)//2], y[-1] = y[-1], y[0], y[len(y)//2]
+                x[0,:], x[len(y)//2,:], x[-1,:] = x[-1,:].copy(), x[0,:].copy(), x[len(y)//2,:].copy()
+            elif y[-1]<y[len(y)//2]:
+                y[len(y)//2], y[-1] = y[-1], y[len(y)//2]
+                x[len(y)//2,:], x[-1,:] = x[-1,:], x[len(y)//2,:].copy()
+
         i=0
-        j=len(set)-1
-        pivot = len(set)//2
+        j=len(y)-1
+        pivot = len(y)//2
+        # sort the arrays relative to the pivot
         while i<j:
-            if set[i]>=set[pivot]:
-                if set[j]<=set[pivot]:
-                    set[i], set[j] = set[j], set[i]
-                    x[i,:], x[j,:] = x[j,:], x[i,:]
+            if y[i]>=y[pivot]:
+                if y[j]<=y[pivot]:
+                    y[i], y[j] = y[j], y[i]
+                    x[i,:], x[j,:] = x[j,:], x[i,:].copy()
                     if i==pivot:
                         pivot=j
                     elif j==pivot:
@@ -171,48 +178,115 @@ def multid_quick_sort(f,x):
                     j-=1
             else:
                 i+=1
-                if set[j]<=set[pivot]:
+                if y[j]<=y[pivot]:
                     j-=1
-        return np.concatenate((multid_quick_sort(f,x[:pivot,:]), [x[pivot,:]], multid_quick_sort(f,x[pivot+1:,:])), axis=0)
+        
+        # the pivot is in the right location now, sort the rest of the array
+        start_y, start_x = multid_quick_sort(y[:pivot],x[:pivot,:])
+        end_y, end_x = multid_quick_sort(y[pivot+1:],x[pivot+1:,:])
+        return np.concatenate((start_y, [y[pivot]], end_y), axis=0), np.concatenate((start_x, [x[pivot,:]], end_x), axis=0)
 
 def DownhillSimplex(f,x,target_accuracy, num_itt=1000):
+    """
+    Implementation of the Downhill Simplex minimalisation algorithm.
+    """
     if x.shape[0]!=x.shape[1]+1:
         raise ValueError("The input array x should have shape (n+1,n)")
+    
+    y = [0]*x.shape[0]
+    for i in range(len(y)):
+        y[i] = f(x[i])
+    
     for itt in range(num_itt):
         # 1. order the points and calculate the mean (excluding the worst point)
-        x = multid_quick_sort(f,x)
+        y,x = multid_quick_sort(y,x)
         mean = np.mean(x[:-1],axis=0)
 
         # 2. check if the fractional range in f(x) (no in x!), this is |f(x_N)-f(x_0)|/[0.5*|f(x_N)+f(x_0)|], is within target accuracy and if so terminate
-        if np.abs(f(x[-1])-f(x[0])) / (0.5*np.abs(f(x[-1])+f(x[0]))) < target_accuracy:
+        if np.isnan(y[-1]) is False and (y[0] == y[1] or np.abs(y[-1] - y[0]) / (0.5*np.abs(y[-1] + y[0]))) < target_accuracy:
             return x[0]
         
         # 3. propose a new point by reflecting x_N:x_try=2mean-x_N
         x_try = 2*mean - x[-1]
         if f(x[0])<=f(x_try)<f(x[-1]):
             x[-1] = x_try
+            y[-1] = f(x_try)
         elif f(x_try)<f(x[0]):
             x_exp = 2*x_try-mean
             if f(x_exp)<f(x_try):
                 x[-1] = x_exp
+                y[-1] = f(x_exp)
             else:
                 x[-1] = x_try
-        elif f(x_try)>=f(x[-1]):
+                y[-1] = f(x_try)
+        else:
             x_try = 0.5*(mean+x[-1])
             if f(x_try)<f(x[-1]):
                 x[-1] = x_try
-        else:
-            x[1:] = 0.5*(x[0]+x[1:])
+                y[-1] = f(x_try)
+            else:
+                x[1:] = 0.5*(x[0]+x[1:])
+                for i in range(1,len(y)):
+                    y[i] = f(x[i])
     return x[0]
 
-def chi2(x, data, xmin, xmax, Nsat):
-    chi2 = 0
-    for i in range(data.size):
-        val = Ndx(x,xmin,xmax,Nsat)
-        if np.isnan(x).any():
-            return np.inf
-        chi2 += (data[i]-val)**2
-    return chi2
+class RNG():
+    def __init__(self, seed):
+        self.seed = seed
+        self.x = np.uint64(seed)
+        self.a1 = np.uint64(21)
+        self.a2 = np.uint64(35)
+        self.a3 = np.uint64(4)
+
+        self.a = np.uint64(1664525)
+        self.c = np.uint64(1013904223)
+        
+    
+    def __call__(self, shape=None):
+        """
+        Generate random numbers using XOR_shift and LCG between 0 and 1
+        """
+        if shape is None:
+            return self._LCG(self._XOR_shift())/18446744073709551615
+        else:
+            return np.array([self._LCG(self._XOR_shift())/18446744073709551615 for _ in range(np.prod(shape))]).reshape(shape)
+    
+    def get_state(self):
+        return {"seed": self.seed, "a1": self.a1, "a2": self.a2, "a3": self.a3, "a": self.a, "c": self.c}
+
+    def _XOR_shift(self):
+        """
+        Implementation of XOR_shift Random Number Generator
+        """
+        x = self.x
+        x = x ^ ( x >> self.a1 )
+        x = x ^ ( x << self.a2 )
+        x = x ^ ( x >> self.a3 )
+        self.x = x
+        return x
+    
+    def _LCG(self, x):
+        """
+        Implementation of Linear Congruential Generator
+        """
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="overflow encountered in scalar multiply")
+            return (self.a*x + self.c)
+
+def chi2(x, model, x_data, y_data, error=None):
+    if x[0]<1 or x[1]<0 or x[2]<0: # check if the model is defined for these input values, otherwise return inf
+        return np.inf
+
+    if len(x_data.shape)==1:
+        y_model = model(x, x_data)
+    else:
+        y_model = np.zeros(y_data.shape)
+        for i in range(y_model.shape[0]):
+            y_model[i] = model(x, x_data[i])
+    if error is None:
+        error = np.sqrt(y_data)
+    mask = (error!=0) # mask locations where the error is zero, as these are (probably) unintentional and lead to division by zero.
+    return np.sum(np.power((y_data[mask]-y_model[mask]),2)/np.power(error[mask],2))
 
 
 
@@ -229,18 +303,14 @@ if __name__=='__main__':
     A = 256/(5*np.pi**(3/2))
 
     # Find the maximum of N(x)
-    #out = downhill_simplex(lambda x: -1*N(x), np.array([0,2.5,5]),0.001)
-    out = golden_section_search(lambda x: -1*N(x, a, b, c, Nsat), 1e-32, 2.5, 5, target_accuracy=0.001)
-    print(out, N(out))
+    out = golden_section_search(lambda x: -1*N(x, a, b, c, Nsat, A), 1e-32, 2.5, 5, target_accuracy=0.001)
     with open('output/ex1a.txt','w') as f:
-        f.write(f'The maximum of N(x) is at x = {out} with N(x) = {N(out)}')
-    #out = downhill_simplex(lambda x: -1*N(x), np.array([[0,2.5,5],[0.1,3,1],[2,3,4],[4,3,2]]),0.001)
-    #print(out, N(out))
+        f.write(f'The maximum of N(x) is at x = {out} with N(x) = {N(out, a, b, c, Nsat, A)}')
 
     ########
     ## 1b ##
     ########
-    def readfile(filename, num_bins): # Courtesy of Marcel van Daalen
+    def readfile(filename, num_bins): # This function was supplied in the exercise
         f = open(filename, 'r')
         data = f.readlines()[3:] #Skip first 3 lines 
         nhalo = int(data[0]) #number of halos
@@ -253,93 +323,141 @@ if __name__=='__main__':
         f.close()
         return radius, nhalo #Return the virial radius for all the satellites in the file, and the number of halos
 
-    num_bins = 75 #why?
+    num_bins = 20
     x_max = 2.5
-    bin_edges = np.linspace(0,x_max,num_bins+1)
-    import matplotlib.pyplot as plt
+    bin_edges = np.logspace(-1,np.log10(x_max),num_bins+1)
 
     mean_num_sat = np.zeros((5,num_bins))
     std_num_sat = np.zeros((5,num_bins))
 
-    for i,file_name in enumerate(['satgals_m11.txt','satgals_m12.txt','satgals_m13.txt','satgals_m14.txt','satgals_m15.txt']):
-        radius, nhalo = readfile('data/'+file_name, num_bins)
-        hist, bins = np.histogram(radius, bins=num_bins)
+    file_names = ['satgals_m11.txt','satgals_m12.txt','satgals_m13.txt','satgals_m14.txt','satgals_m15.txt']
+    names = ['Mhalo = 1e11 Msun','Mhalo = 1e12 Msun','Mhalo = 1e13 Msun','Mhalo = 1e14 Msun','Mhalo = 1e15 Msun']
+    for i,file in enumerate(file_names):
+        radius, nhalo = readfile('data/'+file, num_bins)
+        hist, bins = np.histogram(radius, bins=bin_edges)
         bin_centers = 0.5*(bins[1:]+bins[:-1])
-        
-        mean_num_sat[i] = hist/nhalo #hist/nhalo
-        #std_num_sat[i] = np.std(satellites_per_halo, axis=0)
+        mean_num_sat[i] = hist/nhalo
 
-    x_init = np.array([[2.4,0.25,1.6],
-                    [2.4,0.25,1.6],
-                    [2.4,0.25,1.6],
-                    [2.4,0.25,1.6]])
+    # Plot the dependance of the distribution on parameters a, b, and c in order to determine good initial values for the Downhill Simplex
+    for a in np.linspace(1,10,10):
+        vals = []
+        for i in range(len(bin_centers)):
+            vals.append(Ndx([a,0.25,1.6],np.array([bin_edges[i],bin_edges[i+1],100]).T))
+        plt.plot(bin_centers, vals,label=a)
+    plt.legend()
+    plt.title('relation between Ndx and a')
+    plt.savefig('plots/Ndx_a.pdf')
+    plt.close()
 
+    for b in np.linspace(0.15,1,10):
+        vals = []
+        for i in range(len(bin_centers)):
+            vals.append(Ndx([2.4,b,1.6],np.array([bin_edges[i],bin_edges[i+1],100]).T))
+        plt.plot(bin_centers, vals, label=b)
+    plt.legend()
+    plt.title('relation between Ndx and b')
+    plt.savefig('plots/Ndx_b.pdf')
+    plt.close()
+
+    for c in np.linspace(0.5,5,10):
+        vals = []
+        for i in range(len(bin_centers)):
+            vals.append(Ndx([2.4,0.25,c],np.array([bin_edges[i],bin_edges[i+1],100]).T))
+        plt.plot(bin_centers, vals,label=c)
+    plt.legend()
+    plt.title('relation between Ndx and c')
+    plt.savefig('plots/Ndx_c.pdf')
+    plt.close()
+
+    # Use random initial values within the range found using these plots
+    rng = RNG(2390478)
+    x_init = np.array(( (10-1)*rng(4)+1,
+                        (0.75-0.15)*rng(4)+0.15,
+                        (5-1)*rng(4)+1 )).T
+    #print(x_init)
+    
     best_val = []
     for i in range(5):
-        x_init2 = x_init + 0.5*np.random.rand(4,3)
-        out = DownhillSimplex(lambda x: chi2(x,mean_num_sat[i],0,2.5,np.sum(mean_num_sat[i])),x_init2,1e-30,num_itt=100)
-        print("[a,b,c] = ",out, Ndx(out,0,2.5,100), chi2(out,mean_num_sat[i],0,2.5,np.sum(mean_num_sat[i])))
+        x_init2 = x_init.copy() # to make sure these values are not overwritten during the downhill simplex itterations
+        out = DownhillSimplex(lambda x: chi2(x,Ndx,np.array((bin_edges[:-1],bin_edges[1:],[np.sum(mean_num_sat[i])]*len(bin_centers))).T,mean_num_sat[i]),x_init2,1e-20,num_itt=100)
+        #print("[a,b,c] = ",out, chi2(out,Ndx,np.array((bin_edges[:-1],bin_edges[1:],[np.sum(mean_num_sat[i])]*len(bin_centers))).T,mean_num_sat[i]))
         best_val.append(out)
-        with open('output/ex1b.txt','w') as f:
-            f.write(f'The best fit parameters for file {i} are: [a,b,c] = {out} with Nsat = {np.sum(mean_num_sat[i])}')
+        with open('output/ex1b.txt','a') as f:
+            f.write(f'The best fit parameters for {names[i]} are: [a,b,c] = {out} with Nsat = {np.sum(mean_num_sat[i])}\n')
 
-        plt.bar(bin_centers,mean_num_sat[i],width=2.5/75,alpha=0.5)
-        print(mean_num_sat[i].shape)
-        print(bin_centers.shape)
+        plt.bar(np.log10(bin_centers),mean_num_sat[i],width=(bin_edges[-1]-bin_edges[0])/(num_bins+1)-0.05,zorder=0)
         vals = []
         for j in range(num_bins):
-            vals.append(Ndx(out,bin_edges[j],bin_edges[j+1],np.sum(mean_num_sat[i])))
-        plt.plot(bin_centers,vals,color='red')
-        plt.xscale('log')
+            vals.append(Ndx(out,[bin_edges[j],bin_edges[j+1],np.sum(mean_num_sat[i])]))
+        plt.plot(np.log10(bin_centers),vals,color='red',zorder=1)
+        plt.xlabel('log10(x)')
+        plt.ylabel(r'$\widetilde{N}_i$')
         plt.yscale('log')
         plt.savefig('plots/1b_'+str(i)+'.png')
         plt.close()
 
-
     ########
     ## 1c ##
     ########
-    def log_likelihood(f,x,y):
-        return np.sum( y*np.log(f(x)) - f(x) )
+    def log_likelihood(x, model, x_data, y_data, error=None):
+        if x[0]<1 or x[1]<0 or x[2]<0:
+            return np.inf
+        if len(x_data.shape)==1:
+            y_model = model(x, x_data)
+        else:
+            y_model = np.zeros(y_data.shape)
+            for i in range(y_model.shape[0]):
+                y_model[i] = model(x, x_data[i])
+        mask = (y_model!=0)
+        return -1*np.sum( y_data[mask]*np.log(y_model[mask]) - y_model[mask] )
 
     best_val2 = []
     for i in range(5):
-        x_init2 = x_init + 0.5*np.random.rand(4,3)
-        out = DownhillSimplex(lambda x: -1*log_likelihood(lambda x: Ndx(x,0,2.5,np.sum(mean_num_sat[i])),x,mean_num_sat[i]),x_init2,1e-30,num_itt=100)
-        print("[a,b,c] = ",out, Ndx(out,0,2.5,100), log_likelihood(lambda x: Ndx(x,0,2.5,np.sum(mean_num_sat[i])),out,mean_num_sat[i]))
+        x_init2 = x_init.copy()
+        out = DownhillSimplex(lambda x: log_likelihood(x,Ndx,np.array((bin_edges[:-1],bin_edges[1:],[np.sum(mean_num_sat[i])]*len(bin_centers))).T,mean_num_sat[i]),x_init2,1e-20,num_itt=100)
+        #print("[a,b,c] = ",out, -1*log_likelihood(out,Ndx,np.array((bin_edges[:-1],bin_edges[1:],[np.sum(mean_num_sat[i])]*len(bin_centers))).T,mean_num_sat[i]))
         best_val2.append(out)
-        with open('output/ex1c.txt','w') as f:
-            f.write(f'The best fit parameters for file {i} are: [a,b,c] = {out} with Nsat = {np.sum(mean_num_sat[i])}')
+        with open('output/ex1c.txt','a') as f:
+            f.write(f'The best fit parameters for {names[i]} are: [a,b,c] = {out} with Nsat = {np.sum(mean_num_sat[i])}\n')
 
-        plt.bar(bin_centers,mean_num_sat[i],width=2.5/75,alpha=0.5)
-        print(mean_num_sat[i].shape)
-        print(bin_centers.shape)
+        plt.bar(np.log10(bin_centers),mean_num_sat[i],width=(bin_edges[-1]-bin_edges[0])/(num_bins+1)-0.05,zorder=0)
         vals = []
         for j in range(num_bins):
-            vals.append(Ndx(out,bin_edges[j],bin_edges[j+1],np.sum(mean_num_sat[i])))
-        plt.plot(bin_centers,vals,color='red')
-        plt.xscale('log')
+            vals.append(Ndx(out,[bin_edges[j],bin_edges[j+1],np.sum(mean_num_sat[i])]))
+        plt.plot(np.log10(bin_centers),vals,color='red',zorder=1)
+        plt.xlabel('log10(x)')
+        plt.ylabel(r'$\widetilde{N}_i$')
         plt.yscale('log')
         plt.savefig('plots/1c_'+str(i)+'.png')
         plt.close()
-
+    
     ########
     ## 1d ##
     ########
+    from scipy.special import gammainc
+
     def Gtest(obs,exp):
         mask = obs>0
-        #print(obs,exp)
         return 2*np.sum(obs[mask]*np.log(obs[mask]/exp[mask]))
+    
+    def Qvalue(x,k):
+        return gammainc(k/2,x/2) # scipy.special's implementation of the incomplete gamma-function is regularized (has a factor 1/\Gamma)
+
+    # here k=3, as we are fitting 3 parameters
+    k=3
+
+    gtest = np.zeros((2,5))
+    for i in range(5):
+        vals = []
+        vals2 = []
+        for j in range(num_bins):
+            vals.append(Ndx(best_val[i],[bin_edges[j],bin_edges[j+1],np.sum(mean_num_sat[i])]))
+            vals2.append(Ndx(best_val2[i],[bin_edges[j],bin_edges[j+1],np.sum(mean_num_sat[i])]))
+        gtest[:,i] = [Gtest(mean_num_sat[i],np.array(vals)), Gtest(mean_num_sat[i],np.array(vals2))]
+    
+    qval = Qvalue(gtest, k)
 
     with open('output/ex1d.txt','w') as f:
+        f.write('file, G Gaussian, G Poisson, Q-value Gaussian, Q-value Poisson\n')
         for i in range(5):
-            print("G-test for file ",i)
-            vals = []
-            vals2= []
-            for j in range(num_bins):
-                vals.append(Ndx(best_val[i],bin_edges[j],bin_edges[j+1],np.sum(mean_num_sat[i])))
-                vals2.append(Ndx(best_val2[i],bin_edges[j],bin_edges[j+1],np.sum(mean_num_sat[i])))
-            print(Gtest(mean_num_sat[i],np.array(vals)))
-            f.write(f'G-test for file {i} with best fit parameters from b: {Gtest(mean_num_sat[i],np.array(vals))}\n')
-            print(Gtest(mean_num_sat[i],np.array(vals2)))
-            f.write(f'G-test for file {i} with best fit parameters from c: {Gtest(mean_num_sat[i],np.array(vals2))}\n')
+            f.write(f'{file_names[i]}, {gtest[0,i]}, {gtest[1,i]}, {qval[0,i]}, {qval[1,i]}\n')

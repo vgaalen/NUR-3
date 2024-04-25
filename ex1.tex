@@ -1,112 +1,152 @@
 \section{Satellite galaxies around a massive central – part 2}
 Code of shared modules:
-\lstinputlisting{ex1.py}[firstline=1, lastline=56]
+\lstinputlisting[firstline=1, lastline=289]{ex1.py}
 
+\newpage
 \subsection*{a}
 Here the goal is to find the x-value for which the number density of satellite galaxies is the highest (using the same formula as in hand-in 2).
-I chose to use a golden ratio search algorithm here, as it very robust.
-As the exercise gave a specific range to search in this algorithm works well, as it is impossible to jump ouside this range with this algorithm.
+I chose to use a golden ratio search algorithm here, as it can find a minimum (or maximum) within a bracket without any option to jump out.
+As the exercise gave a specific range to search in, this algorithm is well suited here.
 
 This gave the following solution:
 \lstinputlisting{output/ex1a.txt}
 
 The code used for this subquestion is:
-\lstinputlisting{ex1.py}[firstline=61, lastline=67]
+\lstinputlisting[firstline=293, lastline=308]{ex1.py}
 
 \subsection*{b}
-For this exercise a dataset containing the positions of millions of sattelite galaxies relative to their cluster center is used to fit a number density profile.
+For this exercise a dataset containing the positions of millions of satellite galaxies relative to their cluster center is used to fit a number density profile.
 The profile from the second hand-in is used again, but now the a, b, and c parameters are fitted to the data.
 This is done for 5 different bins for halo mass.
 
 In order to compare the discrete galaxy positions with number densities, these galaxies are binned based on their distance to the cluster center.
-A downhill simplex minimization algorithm is then used to find the best fit for the parameters based on $\Chi^2$.
+I decided to use 20 bins scaled logarithmically between x=0.1 and x=2.5. 
+Figure \ref{fig:ex1b_0} shows that the satellite galaxy distribution falls off very quickly towards x=2.5. 
+Taking a larger $x_{max}$ would therefore only add empty bins increasing computation time.
+The lower bound was taken such that about half of the bins would fall into the model's power-law regime and half in the exponential regime.
+The number of bins was chosen as to accurately describe the drop-off with as little bins as possible.
+As a lower number of bins gives us more galaxies in each bin, the error margin on these values should decrease.
+20 bins gave a good tradeoff between these arguments.
 
-This gives the following profiles:
+A downhill simplex minimization algorithm is then used to find the best fit for the parameters based on a $\chi^2$.
+The are no errors on the dataset, therefore $\sigma^2 = N$ was used here.
+
+For the Downhill Simplex's initial points I took a random sample (using the RNG from hand in 2) of points within a reasonable range.
+This range was determined by eye using figure \ref{fig:Ndx} balancing a good view of the parameter space and giving a good initial guess for our dataset.
+This gave $1\leq a_{init}\leq 10$, $0.15\leq b_{init}\leq 0.75$, and $1\leq c_{init}\leq 5$.
 
 \begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/1b_0.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^11 Msun/h.}
-    \label{fig:ex1b_0}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/1b_1.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^12 Msun/h.}
-    \label{fig:ex1b_1}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/1b_2.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^13 Msun/h.}
-    \label{fig:ex1b_2}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/1b_3.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^14 Msun/h.}
-    \label{fig:ex1b_3}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/1b_4.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^15 Msun/h.}
-    \label{fig:ex1b_4}
+\centering
+\begin{tabular}{ccc}
+    \includegraphics[width=0.3\linewidth]{plots/Ndx_a.pdf} & \includegraphics[width=0.3\linewidth]{plots/Ndx_b.pdf}&\includegraphics[width=0.3\linewidth]{plots/Ndx_c.pdf} \\
+    (a) & (b) & (c)
+\end{tabular}
+\caption{Satellite galaxy distribution for different values for the parameters a, b, and c (in their respective subfigures).}
+\label{fig:Ndx}
 \end{figure}
 
 The best fit values found are:
 \lstinputlisting{output/ex1b.txt}
 
+These give the profiles that can be seen in figures \ref{fig:ex1b_0}-\ref{fig:ex1b_4}.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{plots/1b_0.png}
+    \caption{Number density profile and fit for haloes of approximate mass $10^{11}$ Msun/h. The fit was constructed using Downhill Simplex minimizing a $\chi^2$}
+    \label{fig:ex1b_0}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{plots/1b_1.png}
+    %\caption{Number density profile and fit for haloes of approximate mass $10^{12}$ Msun/h.}
+    \caption{The same as \ref{fig:ex1b_0}, but for halos of mass $\sim 10^{12}$ Msun/h.}
+    \label{fig:ex1b_1}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{plots/1b_2.png}
+    %\caption{Number density profile and fit for haloes of approximate mass $10^{13}$ Msun/h.}
+    \caption{The same as \ref{fig:ex1b_0}, but for halos of mass $\sim 10^{13}$ Msun/h.}
+    \label{fig:ex1b_2}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{plots/1b_3.png}
+    %\caption{Number density profile and fit for haloes of approximate mass $10^{14}$ Msun/h.}
+    \caption{The same as \ref{fig:ex1b_0}, but for halos of mass $\sim 10^{14}$ Msun/h.}
+    \label{fig:ex1b_3}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{plots/1b_4.png}
+    %\caption{Number density profile and fit for haloes of approximate mass $10^{15}$ Msun/h.}
+    \caption{The same as \ref{fig:ex1b_0}, but for halos of mass $\sim 10^{15}$ Msun/h.}
+    \label{fig:ex1b_4}
+\end{figure}
+
 The code used for this subquestion is:
-\lstinputlisting{ex1.py}[firstline=70, lastline=108]
+\lstinputlisting[firstline=310, lastline=397]{ex1.py}
 
 \subsection*{c}
 This exercise is very similar to 1b, except that the assumption of a Gaussian distribution around the density profile is dropped.
 As it is a distribution around a number density, a Poisson distribution is more accurate.
 
+The best fit values found are:
+\lstinputlisting{output/ex1c.txt}
+
+These give the profiles that can be seen in figures \ref{fig:ex1c_0}-\ref{fig:ex1c_4}.
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/1c_0.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^11 Msun/h.}
+    \includegraphics[width=0.8\textwidth]{plots/1c_0.png}
+    \caption{Number density profile and fit for haloes of approximate mass $10^{11}$ Msun/h. The fit was constructed using Downhill Simplex minimizing a Poissonian log likelihood}
     \label{fig:ex1c_0}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/1c_1.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^12 Msun/h.}
+    \includegraphics[width=0.8\textwidth]{plots/1c_1.png}
+    %\caption{Number density profile and fit for haloes of approximate mass $10^{12}$ Msun/h.}
+    \caption{The same as \ref{fig:ex1c_0}, but for halos of mass $\sim 10^{12}$ Msun/h.}
     \label{fig:ex1c_1}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/1c_2.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^13 Msun/h.}
+    \includegraphics[width=0.8\textwidth]{plots/1c_2.png}
+    %\caption{Number density profile and fit for haloes of approximate mass $10^{13}$ Msun/h.}
+    \caption{The same as \ref{fig:ex1c_0}, but for halos of mass $\sim 10^{13}$ Msun/h.}
     \label{fig:ex1c_2}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/1c_3.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^14 Msun/h.}
+    \includegraphics[width=0.8\textwidth]{plots/1c_3.png}
+    %\caption{Number density profile and fit for haloes of approximate mass $10^{14}$ Msun/h.}
+    \caption{The same as \ref{fig:ex1c_0}, but for halos of mass $\sim 10^{14}$ Msun/h.}
     \label{fig:ex1c_3}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/1c_4.png}
-    \caption{Number density profile and fit for haloes of approximate mass 10^15 Msun/h.}
+    \includegraphics[width=0.8\textwidth]{plots/1c_4.png}
+    %\caption{Number density profile and fit for haloes of approximate mass $10^{15}$ Msun/h.}
+    \caption{The same as \ref{fig:ex1c_0}, but for halos of mass $\sim 10^{15}$ Msun/h.}
     \label{fig:ex1c_4}
 \end{figure}
 
-The best fit values found are:
-\lstinputlisting{output/ex1c.txt}
-
 The code used for this subquestion is:
-\lstinputlisting{ex1.py}[firstline=70, lastline=108]
+\lstinputlisting[firstline=399, lastline=432]{ex1.py}
 
 \subsection*{d}
 For this exercise the results of 1b and 1c are compared.
 A G-test is used for this.
 
+By calculating the significance Q of G these approaches can be compared.
+For the degrees of freedom I used $k=3$, this because we are fitting for 3 parameters (as we compare the model to data at discrete set of x-values, this is not a degree of freedom).
+
 This gave the following values:
 \lstinputlisting{output/ex1d.txt}
 
-By calculating the significance Q of G these approaches can be compared.
-...
+The values found when minimizing the Poisson log likelihood the highest (and therefore best) Q-values are found.
+This is to be expected as the observed data is number of satellite galaxies in at a certain radius.
+The actual observations (before taking the mean over a sample of halos) can only take positive integer values, the probability on which is better described by a Poissonian than a Gaussian.
+It is notable though, that for halo masses of $\sim 10^{11}$ Msun the Q-values are very low despite figures \ref{fig:ex1b_0} and \ref{fig:ex1c_0} showing a reasonable fit.
+
+The code used for this subquestion is:
+\lstinputlisting[firstline=434]{ex1.py}
