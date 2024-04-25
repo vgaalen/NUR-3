@@ -1,6 +1,6 @@
 \section{Satellite galaxies around a massive central – part 2}
 Code of shared modules:
-\lstinputlisting[firstline=1, lastline=289]{ex1.py}
+\lstinputlisting[firstline=1, lastline=304]{ex1.py}
 
 \newpage
 \subsection*{a}
@@ -12,7 +12,7 @@ This gave the following solution:
 \lstinputlisting{output/ex1a.txt}
 
 The code used for this subquestion is:
-\lstinputlisting[firstline=293, lastline=308]{ex1.py}
+\lstinputlisting[firstline=308, lastline=323]{ex1.py}
 
 \subsection*{b}
 For this exercise a dataset containing the positions of millions of satellite galaxies relative to their cluster center is used to fit a number density profile.
@@ -29,9 +29,9 @@ As a lower number of bins gives us more galaxies in each bin, the error margin o
 20 bins gave a good tradeoff between these arguments.
 
 A downhill simplex minimization algorithm is then used to find the best fit for the parameters based on a $\chi^2$.
-The are no errors on the dataset, therefore $\sigma^2 = N$ was used here.
+There are no errors included in the dataset, therefore $\sigma^2 = N$ was used here (which is the variance of a Poisson distribution).
 
-For the Downhill Simplex's initial points I took a random sample (using the RNG from hand in 2) of points within a reasonable range.
+For the Downhill Simplex's initial points I took a random sample (using the RNG from hand in 2) of points within a reasonable range (4 points to be precise as the Downhill Simplex operates in 3D).
 This range was determined by eye using figure \ref{fig:Ndx} balancing a good view of the parameter space and giving a good initial guess for our dataset.
 This gave $1\leq a_{init}\leq 10$, $0.15\leq b_{init}\leq 0.75$, and $1\leq c_{init}\leq 5$.
 
@@ -85,7 +85,7 @@ These give the profiles that can be seen in figures \ref{fig:ex1b_0}-\ref{fig:ex
 \end{figure}
 
 The code used for this subquestion is:
-\lstinputlisting[firstline=310, lastline=397]{ex1.py}
+\lstinputlisting[firstline=325, lastline=416]{ex1.py}
 
 \subsection*{c}
 This exercise is very similar to 1b, except that the assumption of a Gaussian distribution around the density profile is dropped.
@@ -131,7 +131,7 @@ These give the profiles that can be seen in figures \ref{fig:ex1c_0}-\ref{fig:ex
 \end{figure}
 
 The code used for this subquestion is:
-\lstinputlisting[firstline=399, lastline=432]{ex1.py}
+\lstinputlisting[firstline=418, lastline=451]{ex1.py}
 
 \subsection*{d}
 For this exercise the results of 1b and 1c are compared.
@@ -149,4 +149,4 @@ The actual observations (before taking the mean over a sample of halos) can only
 It is notable though, that for halo masses of $\sim 10^{11}$ Msun the Q-values are very low despite figures \ref{fig:ex1b_0} and \ref{fig:ex1c_0} showing a reasonable fit.
 
 The code used for this subquestion is:
-\lstinputlisting[firstline=434]{ex1.py}
+\lstinputlisting[firstline=453]{ex1.py}

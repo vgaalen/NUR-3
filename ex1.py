@@ -273,6 +273,21 @@ class RNG():
             warnings.filterwarnings("ignore", message="overflow encountered in scalar multiply")
             return (self.a*x + self.c)
 
+def TestDegeneracy(x):
+    """Test whether a set of points is degenerate
+    returns False if not degenerate"""
+    for i in range(x.shape[0]):
+        x_i = np.concatenate([x[:i], x[i+1:]], axis=0) - x[i]
+
+        angles = np.zeros((x_i.shape[0],x.shape[1]-1))
+        for j in range(x.shape[1]-1):
+            for k in range(x_i.shape[0]):
+                angles[k,j] = np.arctan(x_i[k,j]/x_i[k,j+1])
+                for l in range(k):
+                    if (angles[l]==angles[k]).all(): # 2 points lay on a line as seen from a 3rd point, so the set is degenerate
+                        return True
+    return False
+
 def chi2(x, model, x_data, y_data, error=None):
     if x[0]<1 or x[1]<0 or x[2]<0: # check if the model is defined for these input values, otherwise return inf
         return np.inf
@@ -374,7 +389,11 @@ if __name__=='__main__':
     x_init = np.array(( (10-1)*rng(4)+1,
                         (0.75-0.15)*rng(4)+0.15,
                         (5-1)*rng(4)+1 )).T
-    #print(x_init)
+
+    while TestDegeneracy(x_init):
+        x_init = np.array(( (10-1)*rng(4)+1,
+                        (0.75-0.15)*rng(4)+0.15,
+                        (5-1)*rng(4)+1 )).T
     
     best_val = []
     for i in range(5):
