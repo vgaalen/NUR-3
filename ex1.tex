@@ -7,6 +7,8 @@ Code of shared modules:
 Here the goal is to find the x-value for which the number density of satellite galaxies is the highest (using the same formula as in hand-in 2).
 I chose to use a golden ratio search algorithm here, as it can find a minimum (or maximum) within a bracket without any option to jump out.
 As the exercise gave a specific range to search in, this algorithm is well suited here.
+I expanded the range to a bracket by including the center point, which yields a valid bracket.
+As x=0 is ill-defined when $a<3$, the endpoint at zero is replaced with $10^{-32}$ (as N(x) goes to zero when x approaches zero for this set of parameters, this should not affect the maximum found).
 
 This gave the following solution:
 \lstinputlisting{output/ex1a.txt}
@@ -93,6 +95,7 @@ The code used for this subquestion is:
 \subsection*{c}
 This exercise is very similar to 1b, except that the assumption of a Gaussian distribution around the density profile is dropped.
 As it is a distribution around a number density, a Poisson distribution is more accurate.
+The downhill simplex then minimizes a poisson log likelihood instead of a $\chi^2$ here.
 
 The best fit values found are:
 \lstinputlisting{output/ex1c.txt}
@@ -140,15 +143,15 @@ The code used for this subquestion is:
 For this exercise the results of 1b and 1c are compared.
 A G-test is used for this.
 
-By calculating the significance Q of G these approaches can be compared.
-For the degrees of freedom I used $k=3$, this because we are fitting for 3 parameters (as we compare the model to data at discrete set of x-values, this is not a degree of freedom).
+By calculating the significance Q of G these approaches can be compared and it should become clear whether our sample resembles a Gaussian or a Poisson distribution.
+For the degrees of freedom I used $k=3$, this because we are fitting for 3 parameters.
 
 This gave the following values:
 \lstinputlisting{output/ex1d.txt}
 
-The values found when minimizing the Poisson log likelihood the highest (and therefore best) Q-values are found.
-This is to be expected as the observed data is number of satellite galaxies in at a certain radius.
-The actual observations (before taking the mean over a sample of halos) can only take positive integer values, the probability on which is better described by a Poissonian than a Gaussian.
+The Q-values found for the Poisson log likelihood minimalization are the highest (and therefore best).
+This is to be expected as the observed data is a number of satellite galaxies at a certain radius.
+The actual observations (before taking the mean over a sample of halos) can only take positive integer values, therefore the probability is better described by a Poissonian than a Gaussian.
 It is notable though, that for halo masses of $\sim 10^{11}$ Msun the Q-values are very low despite figures \ref{fig:ex1b_0} and \ref{fig:ex1c_0} showing a reasonable fit.
 
 The code used for this subquestion is:

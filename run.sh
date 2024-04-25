@@ -38,7 +38,9 @@ if [ ! -e "data/satgals_m15.txt" ]; then
 fi
 
 if [ ! -e "output/ex1a.txt" ] || [ ! -e "output/ex1b.txt" ] || [ ! -e "output/ex1c.txt" ] || [ ! -e "output/ex1d.txt" ]; then
-  rm output/ex1*.txt
+  if [ -e "output/ex1a.txt" ] || [ -e "output/ex1b.txt" ] || [ -e "output/ex1c.txt" ] || [ -e "output/ex1d.txt" ]; then
+    rm output/ex1*.txt
+  fi
   echo "Run the script for 1"
   python3 ex1.py
 fi
