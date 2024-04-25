@@ -271,6 +271,7 @@ class RNG():
         """
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="overflow encountered in scalar multiply")
+            warnings.filterwarnings("ignore", message="overflow encountered in ulong_scalars")
             return (self.a*x + self.c)
 
 def TestDegeneracy(x):
